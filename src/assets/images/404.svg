@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="423px" height="297px" viewBox="0 0 423 297" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>404</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="404Gradient">
+            <stop stop-color="#FAFAFA" offset="0%"></stop>
+            <stop stop-color="#E9E9E9" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g transform="translate(0.000000, 0.000000)">
+            <path d="M140,20 L283,20 C294.045695,20 303,28.954305 303,40 L303,257 C303,268.045695 294.045695,277 283,277 L140,277 C128.954305,277 120,268.045695 120,257 L120,40 C120,28.954305 128.954305,20 140,20 Z" fill="url(#404Gradient)"></path>
+            <circle fill="#165DFF" cx="211.5" cy="227.5" r="11.5"></circle>
+            <rect fill="#165DFF" x="180" y="50" width="63" height="8" rx="4"></rect>
+            <rect fill="#86909C" x="160" y="80" width="103" height="6" rx="3"></rect>
+            <rect fill="#86909C" x="160" y="100" width="103" height="6" rx="3"></rect>
+            <rect fill="#86909C" x="160" y="120" width="103" height="6" rx="3"></rect>
+            <path d="M20,150 L403,150" stroke="#86909C" stroke-width="2" stroke-linecap="round" stroke-dasharray="6,6"></path>
+            <g transform="translate(171.000000, 170.000000)">
+                <circle fill="#F53F3F" cx="40" cy="40" r="40"></circle>
+                <path d="M25,40 L55,40 M40,25 L40,55" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"></path>
+            </g>
+        </g>
+    </g>
+</svg> 

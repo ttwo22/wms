@@ -1,0 +1,59 @@
+/* 自定义页面加载进度条 */
+.page-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: rgb(var(--primary-6));
+  z-index: 10001;
+  box-shadow: 0 0 10px rgba(var(--primary-6), 0.7);
+  transition: width 0.2s linear;
+}
+
+/* 页面加载过渡效果 */
+body.page-loading {
+  overflow-x: hidden;
+}
+
+body.page-loading .layout-container {
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.layout-container {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* 移除NProgress默认样式 */
+#nprogress {
+  display: none !important;
+}
+
+#nprogress .bar,
+#nprogress .peg,
+#nprogress .spinner {
+  display: none !important;
+}
+
+/* 添加全屏遮罩，防止中间的闪烁 */
+body.nprogress-busy:after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 9990;
+  pointer-events: none;
+}
+
+/* 进度条层级提升 */
+#nprogress .bar,
+#nprogress .peg {
+  z-index: 10000 !important; /* 确保在最顶层 */
+}
+
+/* ... existing code ... */ 
