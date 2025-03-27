@@ -1,0 +1,115 @@
+@import './variables.less';
+
+// Card 组件样式
+.arco-card {
+  border-radius: @border-radius-base;
+  box-shadow: @box-shadow-base;
+  
+  .arco-card-header {
+    padding: @spacing-lg @spacing-xl;
+    border-bottom: 1px solid @border-color-base;
+    
+    .arco-card-header-title {
+      font-size: @font-size-lg;
+      color: @text-primary;
+    }
+  }
+  
+  .arco-card-body {
+    padding: @spacing-xl;
+  }
+}
+
+// Table 组件样式
+.arco-table {
+  .arco-table-th {
+    background-color: #fafafa;
+    font-weight: 500;
+    color: @text-primary;
+  }
+  
+  .arco-table-td {
+    color: @text-regular;
+  }
+  
+  .arco-table-row:hover {
+    background-color: #f5f7fa;
+  }
+}
+
+// Form 组件样式
+.arco-form {
+  .arco-form-item {
+    margin-bottom: @spacing-lg;
+    
+    .arco-form-item-label {
+      color: @text-regular;
+      font-size: @font-size-base;
+    }
+    
+    .arco-form-item-error-message {
+      color: @error-color;
+      font-size: @font-size-sm;
+    }
+  }
+}
+
+// Tag 组件样式
+.arco-tag {
+  border-radius: @border-radius-sm;
+  padding: 0 @spacing-base;
+  height: 24px;
+  line-height: 22px;
+  
+  &.arco-tag-green {
+    background-color: #e8ffea;
+    border-color: @success-color;
+    color: @success-color;
+  }
+  
+  &.arco-tag-red {
+    background-color: #fff0f0;
+    border-color: @error-color;
+    color: @error-color;
+  }
+  
+  &.arco-tag-orange {
+    background-color: #fff7e8;
+    border-color: @warning-color;
+    color: @warning-color;
+  }
+  
+  &.arco-tag-blue {
+    background-color: #e8f3ff;
+    border-color: @primary-color;
+    color: @primary-color;
+  }
+}
+
+// Button 组件样式
+.arco-btn {
+  height: 32px;
+  padding: 0 @spacing-lg;
+  border-radius: @border-radius-base;
+  font-size: @font-size-base;
+  
+  &.arco-btn-primary {
+    background-color: @primary-color;
+    border-color: @primary-color;
+    
+    &:hover {
+      background-color: lighten(@primary-color, 10%);
+      border-color: lighten(@primary-color, 10%);
+    }
+  }
+  
+  &.arco-btn-secondary {
+    color: @text-regular;
+    border-color: @border-color-base;
+    
+    &:hover {
+      color: @primary-color;
+      border-color: @primary-color;
+    }
+  }
+} 

@@ -1,124 +1,116 @@
 <template>
   <div class="container">
-    <a-card class="general-card">
-      <template #title>公司信息设置</template>
-      <a-row :gutter="24">
-        <a-col :span="16">
-          <a-form
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            layout="vertical"
-            :disabled="!editing"
-            auto-label-width
-          >
-            <a-form-item field="name" label="公司名称" required>
-              <a-input v-model="form.name" placeholder="请输入公司名称" />
-            </a-form-item>
-            
-            <a-row :gutter="16">
-              <a-col :span="12">
-                <a-form-item field="legalRepresentative" label="法定代表人" required>
-                  <a-input v-model="form.legalRepresentative" placeholder="请输入法定代表人姓名" />
-                </a-form-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-item field="businessLicense" label="营业执照编号" required>
-                  <a-input v-model="form.businessLicense" placeholder="请输入营业执照编号" />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            
-            <a-row :gutter="16">
-              <a-col :span="12">
-                <a-form-item field="phone" label="公司电话" required>
-                  <a-input v-model="form.phone" placeholder="请输入公司联系电话" />
-                </a-form-item>
-              </a-col>
-              <a-col :span="12">
-                <a-form-item field="email" label="电子邮箱" required>
-                  <a-input v-model="form.email" placeholder="请输入电子邮箱" />
-                </a-form-item>
-              </a-col>
-            </a-row>
-            
-            <a-form-item field="address" label="公司地址" required>
-              <a-textarea v-model="form.address" placeholder="请输入公司详细地址" :auto-size="{ minRows: 2, maxRows: 3 }" />
-            </a-form-item>
-            
-            <a-form-item field="logo" label="公司Logo">
-              <a-upload
-                list-type="picture-card"
-                :file-list="fileList"
-                :custom-request="customUpload"
-                :limit="1"
-                @remove="handleRemove"
-                @change="handleUploadChange"
-                :disabled="!editing"
-              >
-                <template #upload-button>
-                  <div v-if="editing" class="upload-trigger">
-                    <div class="upload-trigger-text">
-                      <icon-plus />
-                      <div style="margin-top: 10px">上传Logo</div>
-                    </div>
-                  </div>
-                </template>
-              </a-upload>
-            </a-form-item>
-            
-            <a-form-item field="description" label="公司简介">
-              <a-textarea v-model="form.description" placeholder="请输入公司简介" :auto-size="{ minRows: 3, maxRows: 5 }" />
-            </a-form-item>
-            
-            <div class="form-actions">
-              <a-row v-if="!editing">
-                <a-col :span="24" style="text-align: center;">
-                  <a-button type="primary" @click="startEdit">
-                    <template #icon><icon-edit /></template>
-                    编辑信息
-                  </a-button>
-                </a-col>
-              </a-row>
-              
-              <a-row v-else>
-                <a-col :span="24" style="text-align: center;">
-                  <a-space size="large">
-                    <a-button type="primary" @click="saveCompanyInfo" :loading="loading">
-                      <template #icon><icon-save /></template>
-                      保存
-                    </a-button>
-                    <a-button @click="cancelEdit">
-                      <template #icon><icon-close /></template>
-                      取消
-                    </a-button>
-                  </a-space>
-                </a-col>
-              </a-row>
-            </div>
-          </a-form>
-        </a-col>
+    <div class="cards-row">
+      <!-- 左侧公司信息卡片 -->
+      <a-card class="general-card">
+        <template #title>公司信息设置</template>
+        <template #extra>
+          <a-button type="primary" v-if="!editing" @click="startEdit">
+            <template #icon><icon-edit /></template>
+            编辑信息
+          </a-button>
+          <a-space v-else>
+            <a-button type="primary" @click="saveCompanyInfo" :loading="loading">
+              <template #icon><icon-save /></template>
+              保存
+            </a-button>
+            <a-button @click="cancelEdit">
+              <template #icon><icon-close /></template>
+              取消
+            </a-button>
+          </a-space>
+        </template>
         
-        <a-col :span="8">
-          <div class="company-preview">
-            <h3>公司预览</h3>
-            <div class="preview-logo">
-              <img v-if="form.logo" :src="form.logo" alt="公司Logo" />
-              <a-empty v-else image-size="100" description="暂无Logo" />
-            </div>
-            <a-descriptions
-              :data="previewData"
-              layout="inline-vertical"
-              bordered
-              size="medium"
-              title="基本信息"
-              :column="1"
-              class="preview-info"
-            />
+        <a-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          layout="vertical"
+          :disabled="!editing"
+          auto-label-width
+        >
+          <a-form-item field="name" label="公司名称" required>
+            <a-input v-model="form.name" placeholder="请输入公司名称" />
+          </a-form-item>
+          
+          <a-row :gutter="16">
+            <a-col :span="12">
+              <a-form-item field="legalRepresentative" label="法定代表人" required>
+                <a-input v-model="form.legalRepresentative" placeholder="请输入法定代表人姓名" />
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item field="businessLicense" label="营业执照编号" required>
+                <a-input v-model="form.businessLicense" placeholder="请输入营业执照编号" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          
+          <a-row :gutter="16">
+            <a-col :span="12">
+              <a-form-item field="phone" label="公司电话" required>
+                <a-input v-model="form.phone" placeholder="请输入公司联系电话" />
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item field="email" label="电子邮箱" required>
+                <a-input v-model="form.email" placeholder="请输入电子邮箱" />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          
+          <a-form-item field="address" label="公司地址" required>
+            <a-textarea v-model="form.address" placeholder="请输入公司详细地址" :auto-size="{ minRows: 2, maxRows: 3 }" />
+          </a-form-item>
+          
+          <a-form-item field="logo" label="公司Logo">
+            <a-upload
+              list-type="picture-card"
+              :file-list="fileList"
+              :custom-request="customUpload"
+              :limit="1"
+              @remove="handleRemove"
+              @change="handleUploadChange"
+              :disabled="!editing"
+            >
+              <template #upload-button>
+                <div v-if="editing" class="upload-trigger">
+                  <div class="upload-trigger-text">
+                    <icon-plus />
+                    <div style="margin-top: 10px">上传Logo</div>
+                  </div>
+                </div>
+              </template>
+            </a-upload>
+          </a-form-item>
+          
+          <a-form-item field="description" label="公司简介">
+            <a-textarea v-model="form.description" placeholder="请输入公司简介" :auto-size="{ minRows: 3, maxRows: 5 }" />
+          </a-form-item>
+        </a-form>
+      </a-card>
+      
+      <!-- 右侧预览卡片 -->
+      <a-card class="general-card preview-card">
+        <template #title>预览信息</template>
+        
+        <div class="company-preview">
+          <div class="preview-logo">
+            <img v-if="form.logo" :src="form.logo" alt="公司Logo" />
+            <a-empty v-else image-size="100" description="暂无Logo" />
           </div>
-        </a-col>
-      </a-row>
-    </a-card>
+          <a-descriptions
+            :data="previewData"
+            layout="inline-vertical"
+            bordered
+            size="medium"
+            title="基本信息"
+            :column="1"
+            class="preview-info"
+          />
+        </div>
+      </a-card>
+    </div>
   </div>
 </template>
 
@@ -289,61 +281,49 @@ const customUpload = (options) => {
   padding: 20px;
 }
 
-.general-card {
-  margin-bottom: 20px;
+.cards-row {
+  display: flex;
+  gap: 20px;
+}
 
+.general-card {
+  flex: 1;
+  
   :deep(.arco-card-header) {
-    border-bottom: 1px solid var(--color-border);
+    height: 54px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--color-border-2);
+  }
+  
+  :deep(.arco-card-body) {
+    padding: 20px;
   }
 }
 
+.preview-card {
+  flex: 0 0 400px;
+}
+
 .company-preview {
-  padding: 20px;
-  background-color: var(--color-fill-2);
-  border-radius: 4px;
   height: 100%;
-  
-  h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 16px;
-    color: var(--color-text-1);
-    font-weight: 500;
-  }
   
   .preview-logo {
     text-align: center;
-    margin-bottom: 24px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-bottom: 20px;
     
     img {
       max-width: 200px;
-      max-height: 100px;
-      object-fit: contain;
+      max-height: 150px;
+      border-radius: 4px;
     }
   }
   
   .preview-info {
-    margin-top: 12px;
-    
-    :deep(.arco-descriptions-title) {
-      font-size: 15px;
-      font-weight: 500;
-      margin-bottom: 12px;
-      color: var(--color-text-1);
-    }
+    margin-top: 20px;
     
     :deep(.arco-descriptions-item-label) {
-      color: var(--color-text-3);
-      font-weight: 400;
-    }
-    
-    :deep(.arco-descriptions-item-value) {
-      color: var(--color-text-1);
+      width: 100px;
+      font-weight: 500;
     }
   }
 }
@@ -362,12 +342,6 @@ const customUpload = (options) => {
   }
 }
 
-.form-actions {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px dashed var(--color-border);
-}
-
 :deep(.arco-form) {
   width: 100%;
 }
@@ -382,5 +356,21 @@ const customUpload = (options) => {
 
 :deep(.arco-form-item-label) {
   font-weight: 500;
+}
+
+:deep(.general-card .arco-btn) {
+  display: flex;
+  align-items: center;
+  
+  .arco-icon {
+    margin-right: 6px;
+  }
+}
+
+:deep(.arco-modal-footer .arco-btn),
+:deep(.modal-footer .arco-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 </style> 

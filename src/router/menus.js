@@ -177,6 +177,13 @@ const baseMenus = [
     icon: 'icon-import',
     children: [
       {
+        key: 'inbound_list',
+        title: '入库申请列表',
+        path: '/inbound/inbound_list',
+        icon: 'icon-list',
+        roles: ['admin', 'employee']
+      },
+      {
         key: 'inbound_req_inspect',
         title: '入库申请验收',
         path: '/inbound/inbound_req_inspect',
@@ -185,9 +192,16 @@ const baseMenus = [
       },
       {
         key: 'inbound_shelve_doc',
-        title: '入库上架单据',
+        title: '入库上架作业',
         path: '/inbound/inbound_shelve_doc',
         icon: 'icon-file',
+        roles: ['admin', 'employee']
+      },
+      {
+        key: 'inbound_record',
+        title: '入库记录查询',
+        path: '/inbound/inbound_record',
+        icon: 'icon-history',
         roles: ['admin', 'employee']
       }
     ]
@@ -198,15 +212,29 @@ const baseMenus = [
     icon: 'icon-export',
     children: [
       {
+        key: 'outbound_list',
+        title: '出库申请列表',
+        path: '/outbound/outbound_list',
+        icon: 'icon-list',
+        roles: ['admin', 'employee']
+      },
+      {
         key: 'outbound_req_approve',
-        title: '出库申请审核',
+        title: '出库审批管理',
         path: '/outbound/outbound_req_approve',
-        icon: 'icon-edit',
+        icon: 'icon-check',
+        roles: ['admin', 'employee']
+      },
+      {
+        key: 'outbound_picking',
+        title: '拣货作业管理',
+        path: '/outbound/outbound_picking',
+        icon: 'icon-scissor',
         roles: ['admin', 'employee']
       },
       {
         key: 'outbound_op_ship',
-        title: '出库作业发货',
+        title: '出库发货确认',
         path: '/outbound/outbound_op_ship',
         icon: 'icon-send',
         roles: ['admin', 'employee']

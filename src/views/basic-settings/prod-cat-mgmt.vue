@@ -1,139 +1,109 @@
 <template>
   <div class="container">
-    <a-row :gutter="16">
-      <a-col :span="8">
-        <a-card class="general-card">
-          <template #title>
-            <span class="card-title">
-              <icon-folder style="margin-right: 8px;" />分类树
-            </span>
-          </template>
-          <template #extra>
-            <a-button type="primary" size="small" @click="openCreateModal('root')">
-              <template #icon><icon-plus /></template>
-              新增根分类
-            </a-button>
-          </template>
-          
-          <div class="search-bar">
-            <a-input-search
-              v-model="searchKeyword"
-              placeholder="搜索分类名称"
-              button-text="搜索"
-              search-button
-              allow-clear
-              @search="handleSearch"
-            />
-          </div>
-          
-          <a-spin :loading="loading" style="width: 100%">
-            <div class="tree-container">
-              <a-tree
-                :data="treeData"
-                :draggable="true"
-                @drag-end="handleDragEnd"
-                :default-expanded-keys="expandedKeys"
-                :selected-keys="selectedKeys"
-                @select="handleSelect"
-                show-line
-                block-node
-                size="medium"
-              >
-                <template #switcher-icon="{ expanded }">
-                  <icon-minus v-if="expanded" />
-                  <icon-plus v-else />
-                </template>
-                <template #icon="{ node }">
-                  <icon-folder v-if="node && node.children && node.children.length > 0" />
-                  <icon-file v-else />
-                </template>
-              </a-tree>
-            </div>
-          </a-spin>
-        </a-card>
-      </a-col>
-      
-      <a-col :span="16">
-        <a-card class="general-card">
-          <template #title>
-            <span class="card-title">
-              <icon-info-circle style="margin-right: 8px;" />分类详情
-            </span>
-            <span v-if="currentCategory.title" class="detail-subtitle">{{ currentCategory.title }}</span>
-          </template>
-          
-          <div v-if="Object.keys(currentCategory).length > 0">
-            <a-descriptions
-              :data="getCategoryDetail()"
-              :column="1"
-              layout="inline-vertical"
-              bordered
+    <div class="cards-row">
+      <!-- 左侧分类树卡片 -->
+      <a-card class="general-card">
+        <template #title>分类树</template>
+        <template #extra>
+          <a-button type="primary" @click="openCreateModal('root')">
+            <template #icon><icon-plus /></template>
+            新增根分类
+          </a-button>
+        </template>
+        
+        <div class="search-wrapper">
+          <a-input-search
+            v-model="searchKeyword"
+            placeholder="搜索分类名称或编码"
+            button-text="搜索"
+            search-button
+            allow-clear
+            @search="handleSearch"
+          />
+        </div>
+        
+        <a-spin :loading="loading" style="width: 100%">
+          <div class="tree-container">
+            <a-tree
+              :data="treeData"
+              :draggable="true"
+              @drag-end="handleDragEnd"
+              :default-expanded-keys="expandedKeys"
+              :selected-keys="selectedKeys"
+              @select="handleSelect"
+              show-line
+              block-node
               size="large"
-              class="category-description"
-            />
-            
-            <div class="detail-product-list" v-if="currentCategory.key">
-              <div class="list-header">
-                <h3><icon-unordered-list style="margin-right: 8px;" />分类下的商品</h3>
-                <a-radio-group v-model="productListType" type="button" size="small">
-                  <a-radio value="all">全部</a-radio>
-                  <a-radio value="active">正常</a-radio>
-                  <a-radio value="inactive">禁用</a-radio>
-                </a-radio-group>
-              </div>
-              
-              <a-table
-                :data="productList"
-                :loading="productLoading"
-                :pagination="{ pageSize: 5 }"
-                :bordered="false"
-                stripe
-                row-key="id"
-              >
-                <template #columns>
-                  <a-table-column title="商品编码" data-index="code" :width="120" />
-                  <a-table-column title="商品名称" data-index="name" :width="150" />
-                  <a-table-column title="商品图片" :width="100">
-                    <template #cell="{ record }">
-                      <a-image
-                        :src="record.image"
-                        :preview-visible="false"
-                        width="40"
-                        height="40"
-                        show-loader
-                      />
-                    </template>
-                  </a-table-column>
-                  <a-table-column title="规格型号" data-index="specification" :width="120" />
-                  <a-table-column title="计量单位" data-index="unit" :width="80" />
-                  <a-table-column title="状态" :width="80">
-                    <template #cell="{ record }">
-                      <a-tag :color="record.status === 1 ? 'green' : 'red'">
-                        {{ record.status === 1 ? '正常' : '禁用' }}
-                      </a-tag>
-                    </template>
-                  </a-table-column>
-                  <a-table-column title="操作" :width="100">
-                    <template #cell="{ record }">
-                      <a-button type="text" size="small" @click="viewProduct(record)">
-                        查看
+            >
+              <template #title="nodeData">
+                <div class="custom-tree-node">
+                  <span class="node-title">{{ nodeData.title }}</span>
+                  <div class="node-actions">
+                    <a-button type="text" size="mini" @click.stop="openEditModal(nodeData)">
+                      <template #icon><icon-edit /></template>
+                    </a-button>
+                    <a-button type="text" size="mini" @click.stop="openCreateModal(nodeData.key)">
+                      <template #icon><icon-plus /></template>
+                    </a-button>
+                    <a-popconfirm
+                      content="确定删除此分类及所有子分类吗？"
+                      position="right"
+                      @ok="deleteCategory(nodeData.key)"
+                    >
+                      <a-button type="text" size="mini" status="danger" @click.stop>
+                        <template #icon><icon-delete /></template>
                       </a-button>
-                    </template>
-                  </a-table-column>
-                </template>
-              </a-table>
-            </div>
-          </div>
-          <div v-else class="empty-detail">
-            <a-empty description="请选择左侧分类查看详情">
-              <template #image>
-                <icon-search style="font-size: 48px; color: var(--color-text-3);" />
+                    </a-popconfirm>
+                  </div>
+                </div>
               </template>
-            </a-empty>
+              <template #switcher-icon="{ expanded }">
+                <icon-minus v-if="expanded" />
+                <icon-plus v-else />
+              </template>
+              <template #icon="{ node }">
+                <icon-folder style="color: #4080FF"/>
+              </template>
+            </a-tree>
           </div>
-        </a-card>
-      </a-col>
-    </a-row>
+        </a-spin>
+      </a-card>
+
+      <!-- 右侧分类详情卡片 -->
+      <a-card class="general-card">
+        <template #title>分类详情</template>
+        <template #extra>
+          <a-space v-if="Object.keys(currentCategory).length > 0">
+            <a-button type="outline" size="small" @click="openEditModal(currentCategory)">
+              <template #icon><icon-edit /></template>
+              编辑分类
+            </a-button>
+            <a-button type="primary" size="small" @click="openCreateModal(currentCategory.key)">
+              <template #icon><icon-plus /></template>
+              添加子分类
+            </a-button>
+          </a-space>
+        </template>
+        
+        <div v-if="Object.keys(currentCategory).length > 0" class="detail-content">
+          <a-descriptions
+            :data="getCategoryDetail()"
+            :column="1"
+            layout="inline-vertical"
+            bordered
+            size="large"
+            class="category-description"
+          />
+        </div>
+        <div v-else class="empty-detail">
+          <a-empty description="请选择左侧分类查看详情">
+            <template #image>
+              <icon-folder style="font-size: 48px; color: var(--color-text-3);" />
+            </template>
+          </a-empty>
+        </div>
+      </a-card>
+    </div>
 
     <!-- 新增/编辑分类弹窗 -->
     <a-modal
@@ -155,10 +125,18 @@
           <a-input v-model="form.parentName" placeholder="父级分类" readonly />
         </a-form-item>
         <a-form-item field="name" label="分类名称" required>
-          <a-input v-model="form.name" placeholder="请输入分类名称" allow-clear />
+          <a-input v-model="form.name" placeholder="请输入分类名称" allow-clear @change="generateCode" />
         </a-form-item>
         <a-form-item field="code" label="分类编码" required>
-          <a-input v-model="form.code" placeholder="请输入分类编码" allow-clear />
+          <a-input-group>
+            <a-input v-model="form.code" placeholder="请输入分类编码" allow-clear style="width: calc(100% - 104px)" />
+            <a-button @click="generateCode">自动生成</a-button>
+          </a-input-group>
+          <template #extra>
+            <div class="code-tip">
+              分类编码将用于系统内部关联和数据处理，建议使用英文、数字组合
+            </div>
+          </template>
         </a-form-item>
         <a-form-item field="sort" label="排序">
           <a-input-number v-model="form.sort" placeholder="数字越小越靠前" :min="0" :max="999" style="width: 100%;" />
@@ -170,7 +148,11 @@
           </a-radio-group>
         </a-form-item>
         <a-form-item field="description" label="分类描述">
-          <a-textarea v-model="form.description" placeholder="请输入分类描述" allow-clear :auto-size="{minRows: 3, maxRows: 5}" />
+          <a-textarea
+            v-model="form.description" 
+            placeholder="请输入分类描述"
+            :auto-size="{ minRows: 3, maxRows: 5 }"
+          />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -178,408 +160,177 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { Message } from '@arco-design/web-vue';
+import { ref, reactive, computed, onMounted, h } from 'vue';
+import { Message, Modal } from '@arco-design/web-vue';
 import { 
   IconPlus, 
   IconEdit, 
   IconDelete, 
-  IconSearch, 
-  IconFolder, 
+  IconSearch,
   IconFile,
-  IconUnorderedList,
+  IconFolder,
   IconInfoCircle,
   IconMinus
 } from '@arco-design/web-vue/es/icon';
 
-// 状态和数据
+// 数据加载和状态
 const loading = ref(false);
-const treeData = ref([
-  {
-    title: '电子产品',
-    key: '1',
-    code: 'ELEC',
-    createTime: '2024-01-01 10:00:00',
-    updateTime: '2024-01-10 15:30:00',
-    sort: 0,
-    status: 1,
-    description: '各类电子产品，包括手机、电脑等',
-    children: [
-      {
-        title: '手机',
-        key: '1-1',
-        code: 'ELEC-PHONE',
-        createTime: '2024-01-01 10:30:00',
-        updateTime: '2024-01-10 15:35:00',
-        sort: 0,
-        status: 1,
-        description: '各品牌手机',
-        children: [
-          {
-            title: '苹果手机',
-            key: '1-1-1',
-            code: 'ELEC-PHONE-APPLE',
-            createTime: '2024-01-01 11:00:00',
-            updateTime: '2024-01-10 15:40:00',
-            sort: 0,
-            status: 1,
-            description: '苹果品牌手机产品'
-          },
-          {
-            title: '安卓手机',
-            key: '1-1-2',
-            code: 'ELEC-PHONE-ANDROID',
-            createTime: '2024-01-01 11:30:00',
-            updateTime: '2024-01-10 15:45:00',
-            sort: 1,
-            status: 1,
-            description: '安卓系统手机产品'
-          }
-        ]
-      },
-      {
-        title: '电脑',
-        key: '1-2',
-        code: 'ELEC-PC',
-        createTime: '2024-01-02 09:00:00',
-        updateTime: '2024-01-10 15:50:00',
-        sort: 1,
-        status: 1,
-        description: '笔记本电脑和台式电脑',
-        children: []
-      }
-    ]
-  },
-  {
-    title: '办公用品',
-    key: '2',
-    code: 'OFFICE',
-    createTime: '2024-01-03 09:00:00',
-    updateTime: '2024-01-10 16:00:00',
-    sort: 1,
-    status: 1,
-    description: '办公用纸、文具等',
-    children: [
-      {
-        title: '办公用纸',
-        key: '2-1',
-        code: 'OFFICE-PAPER',
-        createTime: '2024-01-03 09:30:00',
-        updateTime: '2024-01-10 16:10:00',
-        sort: 0,
-        status: 1,
-        description: '各种办公用纸',
-        children: []
-      },
-      {
-        title: '文具',
-        key: '2-2',
-        code: 'OFFICE-STATIONERY',
-        createTime: '2024-01-03 10:00:00',
-        updateTime: '2024-01-10 16:20:00',
-        sort: 1,
-        status: 0,
-        description: '各种办公文具',
-        children: []
-      }
-    ]
-  }
-]);
-const expandedKeys = ref(['1', '1-1', '2']);
-const selectedKeys = ref([]);
-const searchKeyword = ref('');
-
-// 分类详情
-const currentCategory = ref({});
-const productListType = ref('all');
-const productList = ref([]);
-const productLoading = ref(false);
-
-// 表单和模态框
-const formRef = ref(null);
 const modalVisible = ref(false);
 const modalLoading = ref(false);
-const modalType = ref('create');
+const modalType = ref('create'); // create, edit
+const searchKeyword = ref('');
+
+// 分类树和选中状态
+const treeData = ref([]);
+const expandedKeys = ref([]);
+const selectedKeys = ref([]);
+const currentCategory = ref({});
+
+// 表单引用和数据
+const formRef = ref(null);
 const form = reactive({
-  id: '',
-  parentId: '',
+  id: undefined,
+  parentId: undefined,
   parentName: '',
   name: '',
   code: '',
   sort: 0,
-  description: '',
-  status: 1
+  status: 1,
+  description: ''
 });
 
 // 表单验证规则
 const rules = {
-  name: [{ required: true, message: '请输入分类名称' }],
-  code: [{ required: true, message: '请输入分类编码' }]
+  name: [
+    { required: true, message: '请输入分类名称' },
+    { maxLength: 30, message: '分类名称最多30个字符' }
+  ],
+  code: [
+    { required: true, message: '请输入分类编码' },
+    { match: /^[A-Za-z0-9-_]+$/, message: '分类编码只能包含字母、数字、下划线和连字符' }
+  ],
+  status: [
+    { required: true, message: '请选择状态' }
+  ]
 };
 
-// 初始化
-onMounted(() => {
-  fetchCategoryTree();
-});
-
-// 监听当前分类变化，加载商品列表
-watch([currentCategory, productListType], () => {
-  if (currentCategory.value && currentCategory.value.key) {
-    fetchProductList();
-  }
-});
-
-// 获取分类树数据
-const fetchCategoryTree = () => {
-  loading.value = true;
-  // 模拟API请求
-  setTimeout(() => {
-    // 已经在初始化时设置了数据，这里不需要再次设置
-    loading.value = false;
-  }, 600);
-};
-
-// 获取商品列表
-const fetchProductList = () => {
-  if (!currentCategory.value.key) return;
+// 计算当前最大层级
+const maxExistingLevel = computed(() => {
+  let maxLevel = 1;
   
-  productLoading.value = true;
-  // 模拟API请求
-  setTimeout(() => {
-    // 根据分类和筛选条件获取商品列表
-    const allProducts = [
-      {
-        id: 1,
-        code: 'SP20240001',
-        name: 'iPhone 15 Pro Max',
-        image: 'https://img2.baidu.com/it/u=1304262864,3453810653&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500',
-        specification: '256GB 远峰蓝',
-        unit: '台',
-        status: 1
-      },
-      {
-        id: 2,
-        code: 'SP20240002',
-        name: 'iPhone 14 Pro',
-        image: 'https://img1.baidu.com/it/u=1811219489,4229478017&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=343',
-        specification: '128GB 暗夜紫',
-        unit: '台',
-        status: 1
-      },
-      {
-        id: 3,
-        code: 'SP20240003',
-        name: 'iPhone 13 Mini',
-        image: 'https://pic1.zhimg.com/v2-d5d46e22a654a0f9a751dd5ac3ccbce0_b.jpg',
-        specification: '64GB 银色',
-        unit: '台',
-        status: 0
+  const findMaxLevel = (nodes, currentLevel) => {
+    for (const node of nodes) {
+      maxLevel = Math.max(maxLevel, currentLevel);
+      if (node.children && node.children.length > 0) {
+        findMaxLevel(node.children, currentLevel + 1);
       }
-    ];
-    
-    // 根据选择的过滤条件筛选
-    if (productListType.value === 'active') {
-      productList.value = allProducts.filter(item => item.status === 1);
-    } else if (productListType.value === 'inactive') {
-      productList.value = allProducts.filter(item => item.status === 0);
-    } else {
-      productList.value = allProducts;
     }
-    
-    productLoading.value = false;
-  }, 300);
-};
-
-// 树节点选择
-const handleSelect = (selectedKeys, { selectedNodes }) => {
-  if (selectedKeys.length > 0 && selectedNodes.length > 0) {
-    currentCategory.value = selectedNodes[0];
-  } else {
-    currentCategory.value = {};
-  }
-};
-
-// 获取分类详情数据
-const getCategoryDetail = () => {
-  if (!currentCategory.value) return [];
+  };
   
-  return [
-    { label: '分类名称', value: currentCategory.value.title },
-    { label: '分类编码', value: currentCategory.value.code },
-    { label: '创建时间', value: currentCategory.value.createTime },
-    { label: '更新时间', value: currentCategory.value.updateTime },
-    { label: '排序', value: currentCategory.value.sort },
-    { label: '状态', value: currentCategory.value.status === 1 ? '启用' : '禁用' },
-    { label: '描述', value: currentCategory.value.description || '-' }
-  ];
-};
+  findMaxLevel(treeData.value, 1);
+  return maxLevel;
+});
 
-// 搜索分类
-const handleSearch = () => {
-  if (!searchKeyword.value) {
-    // 重置分类树
-    fetchCategoryTree();
-    return;
-  }
-  
-  // 模拟搜索逻辑
+// 生命周期钩子
+onMounted(() => {
+  fetchCategories();
+});
+
+// 获取分类列表
+const fetchCategories = () => {
   loading.value = true;
+  
+  // 模拟API请求
   setTimeout(() => {
-    // 简单模拟根据关键字搜索
-    const keyword = searchKeyword.value.toLowerCase();
-    // 递归搜索函数
-    const searchTree = (nodes) => {
-      const result = [];
-      for (const node of nodes) {
-        if (node.title.toLowerCase().includes(keyword) || node.code.toLowerCase().includes(keyword)) {
-          // 如果当前节点匹配，复制一份
-          const newNode = { ...node };
-          if (node.children && node.children.length > 0) {
-            newNode.children = searchTree(node.children);
-          }
-          result.push(newNode);
-        } else if (node.children && node.children.length > 0) {
-          // 如果当前节点不匹配但有子节点，搜索子节点
-          const filteredChildren = searchTree(node.children);
-          if (filteredChildren.length > 0) {
-            result.push({
-              ...node,
-              children: filteredChildren
-            });
-          }
-        }
-      }
-      return result;
-    };
-    
-    // 执行搜索
-    const originalTree = [
+    // 模拟分类数据
+    treeData.value = [
       {
-        title: '电子产品',
         key: '1',
-        code: 'ELEC',
-        createTime: '2024-01-01 10:00:00',
-        updateTime: '2024-01-10 15:30:00',
-        sort: 0,
-        status: 1,
-        description: '各类电子产品，包括手机、电脑等',
+        title: '电子产品',
+        code: 'electronics',
         children: [
           {
-            title: '手机',
             key: '1-1',
-            code: 'ELEC-PHONE',
-            createTime: '2024-01-01 10:30:00',
-            updateTime: '2024-01-10 15:35:00',
-            sort: 0,
-            status: 1,
-            description: '各品牌手机',
+            title: '手机',
+            code: 'electronics-phone',
             children: [
               {
-                title: '苹果手机',
                 key: '1-1-1',
-                code: 'ELEC-PHONE-APPLE',
-                createTime: '2024-01-01 11:00:00',
-                updateTime: '2024-01-10 15:40:00',
-                sort: 0,
-                status: 1,
-                description: '苹果品牌手机产品'
+                title: '智能手机',
+                code: 'electronics-phone-smart'
               },
               {
-                title: '安卓手机',
                 key: '1-1-2',
-                code: 'ELEC-PHONE-ANDROID',
-                createTime: '2024-01-01 11:30:00',
-                updateTime: '2024-01-10 15:45:00',
-                sort: 1,
-                status: 1,
-                description: '安卓系统手机产品'
+                title: '功能手机',
+                code: 'electronics-phone-basic'
               }
             ]
           },
           {
-            title: '电脑',
             key: '1-2',
-            code: 'ELEC-PC',
-            createTime: '2024-01-02 09:00:00',
-            updateTime: '2024-01-10 15:50:00',
-            sort: 1,
-            status: 1,
-            description: '笔记本电脑和台式电脑',
-            children: []
+            title: '电脑',
+            code: 'electronics-computer',
+            children: [
+              {
+                key: '1-2-1',
+                title: '笔记本电脑',
+                code: 'electronics-computer-laptop'
+              },
+              {
+                key: '1-2-2',
+                title: '台式电脑',
+                code: 'electronics-computer-desktop'
+              }
+            ]
           }
         ]
       },
       {
-        title: '办公用品',
         key: '2',
-        code: 'OFFICE',
-        createTime: '2024-01-03 09:00:00',
-        updateTime: '2024-01-10 16:00:00',
-        sort: 1,
-        status: 1,
-        description: '办公用纸、文具等',
+        title: '服装',
+        code: 'clothing',
         children: [
           {
-            title: '办公用纸',
             key: '2-1',
-            code: 'OFFICE-PAPER',
-            createTime: '2024-01-03 09:30:00',
-            updateTime: '2024-01-10 16:10:00',
-            sort: 0,
-            status: 1,
-            description: '各种办公用纸',
-            children: []
+            title: '男装',
+            code: 'clothing-men'
           },
           {
-            title: '文具',
             key: '2-2',
-            code: 'OFFICE-STATIONERY',
-            createTime: '2024-01-03 10:00:00',
-            updateTime: '2024-01-10 16:20:00',
-            sort: 1,
-            status: 0,
-            description: '各种办公文具',
-            children: []
+            title: '女装',
+            code: 'clothing-women'
           }
         ]
+      },
+      {
+        key: '3',
+        title: '食品',
+        code: 'food',
+        children: []
       }
     ];
     
-    treeData.value = searchTree(originalTree);
-    
-    // 设置所有节点为展开状态
-    const collectKeys = (nodes) => {
-      let keys = [];
-      for (const node of nodes) {
-        keys.push(node.key);
-        if (node.children && node.children.length > 0) {
-          keys = keys.concat(collectKeys(node.children));
-        }
-      }
-      return keys;
-    };
-    
-    expandedKeys.value = collectKeys(treeData.value);
+    // 默认展开第一个节点
+    expandedKeys.value = ['1', '2'];
     loading.value = false;
-  }, 500);
+  }, 800);
 };
 
-// 拖拽结束
-const handleDragEnd = ({ dragNode, dropNode, dropPosition }) => {
-  Message.success(`将 ${dragNode.title} 拖拽到 ${dropNode.title} ${dropPosition === -1 ? '之前' : dropPosition === 1 ? '之后' : '下级'}`);
-};
-
-// 打开新增分类弹窗
-const openCreateModal = (parentKey) => {
-  modalType.value = 'create';
-  resetForm();
-  
-  // 设置父级分类
-  if (parentKey === 'root') {
-    form.parentId = '';
-    form.parentName = '根分类';
+// 处理搜索
+const handleSearch = () => {
+  // TODO: 实现搜索功能
+  if (searchKeyword.value) {
+    Message.info(`搜索: ${searchKeyword.value}`);
   } else {
-    // 查找父级分类
+    fetchCategories();
+  }
+};
+
+// 处理分类选择
+const handleSelect = (selectedKeys, e) => {
+  if (selectedKeys.length > 0) {
+    const key = selectedKeys[0];
+    // 查找选中的节点
     const findNode = (nodes, key) => {
       for (const node of nodes) {
         if (node.key === key) {
@@ -593,98 +344,311 @@ const openCreateModal = (parentKey) => {
       return null;
     };
     
-    const parentNode = findNode(treeData.value, parentKey);
-    if (parentNode) {
-      form.parentId = parentKey;
-      form.parentName = parentNode.title;
+    const selectedNode = findNode(treeData.value, key);
+    if (selectedNode) {
+      currentCategory.value = { ...selectedNode };
     }
+  } else {
+    currentCategory.value = {};
   }
-  
-  modalVisible.value = true;
 };
 
-// 打开编辑分类弹窗
-const openEditModal = (nodeData) => {
-  modalType.value = 'edit';
-  resetForm();
+// 打开创建模态框
+const openCreateModal = (parentKey) => {
+  modalType.value = 'create';
   
-  form.id = nodeData.key;
-  form.name = nodeData.title;
-  form.code = nodeData.code;
-  form.sort = nodeData.sort;
-  form.description = nodeData.description;
-  form.status = nodeData.status;
-  
-  modalVisible.value = true;
-};
-
-// 重置表单
-const resetForm = () => {
-  if (formRef.value) {
-    formRef.value.resetFields();
-  }
-  form.id = '';
-  form.parentId = '';
-  form.parentName = '';
+  // 重置表单
+  form.id = undefined;
+  form.parentId = parentKey === 'root' ? undefined : parentKey;
   form.name = '';
   form.code = '';
   form.sort = 0;
-  form.description = '';
   form.status = 1;
+  form.description = '';
+  
+  // 设置父级分类名称
+  if (parentKey && parentKey !== 'root') {
+    const findParent = (nodes, key) => {
+      for (const node of nodes) {
+        if (node.key === key) {
+          return node;
+        }
+        if (node.children && node.children.length > 0) {
+          const found = findParent(node.children, key);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const parentNode = findParent(treeData.value, parentKey);
+    form.parentName = parentNode ? parentNode.title : '';
+    
+    // 检查层级限制
+    if (!checkLevelLimit(parentKey)) {
+      return;
+    }
+  } else {
+    form.parentName = '根分类';
+  }
+  
+  modalVisible.value = true;
 };
 
-// 提交表单
+// 打开编辑模态框
+const openEditModal = (node) => {
+  modalType.value = 'edit';
+  
+  // 填充表单
+  form.id = node.key;
+  form.name = node.title;
+  form.code = node.code;
+  form.sort = node.sort || 0;
+  form.status = node.status !== undefined ? node.status : 1;
+  form.description = node.description || '';
+  
+  modalVisible.value = true;
+};
+
+// 处理模态框确认
 const handleModalOk = async () => {
-  if (!formRef.value) return;
   try {
     await formRef.value.validate();
     modalLoading.value = true;
     
     // 模拟API请求
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (modalType.value === 'create') {
-      Message.success('新增分类成功');
-    } else {
-      Message.success('编辑分类成功');
-    }
-    
-    modalVisible.value = false;
-    fetchCategoryTree();
-    // 清空选中状态和详情
-    selectedKeys.value = [];
-    currentCategory.value = {};
+    setTimeout(() => {
+      if (modalType.value === 'create') {
+        // 模拟添加
+        const newCategory = {
+          key: `new-${Date.now()}`,
+          title: form.name,
+          code: form.code,
+          sort: form.sort,
+          status: form.status,
+          description: form.description,
+          children: []
+        };
+        
+        if (form.parentId && form.parentId !== 'root') {
+          // 添加子分类
+          const addChild = (nodes, parentKey, newNode) => {
+            for (const node of nodes) {
+              if (node.key === parentKey) {
+                node.children = node.children || [];
+                node.children.push(newNode);
+                return true;
+              }
+              if (node.children && node.children.length > 0) {
+                if (addChild(node.children, parentKey, newNode)) {
+                  return true;
+                }
+              }
+            }
+            return false;
+          };
+          
+          addChild(treeData.value, form.parentId, newCategory);
+        } else {
+          // 添加根分类
+          treeData.value.push(newCategory);
+        }
+        
+        Message.success('分类创建成功');
+      } else {
+        // 模拟编辑
+        const updateNode = (nodes, key, updates) => {
+          for (let i = 0; i < nodes.length; i++) {
+            if (nodes[i].key === key) {
+              nodes[i].title = updates.name;
+              nodes[i].code = updates.code;
+              nodes[i].sort = updates.sort;
+              nodes[i].status = updates.status;
+              nodes[i].description = updates.description;
+              return true;
+            }
+            if (nodes[i].children && nodes[i].children.length > 0) {
+              if (updateNode(nodes[i].children, key, updates)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+        
+        updateNode(treeData.value, form.id, {
+          name: form.name,
+          code: form.code,
+          sort: form.sort,
+          status: form.status,
+          description: form.description
+        });
+        
+        // 如果当前编辑的就是选中的分类，同步更新详情
+        if (currentCategory.value.key === form.id) {
+          currentCategory.value.title = form.name;
+          currentCategory.value.code = form.code;
+          currentCategory.value.sort = form.sort;
+          currentCategory.value.status = form.status;
+          currentCategory.value.description = form.description;
+        }
+        
+        Message.success('分类更新成功');
+      }
+      
+      modalVisible.value = false;
+      modalLoading.value = false;
+    }, 500);
   } catch (error) {
-    console.error(error);
-  } finally {
-    modalLoading.value = false;
+    console.error('表单验证失败', error);
   }
 };
 
-// 取消
+// 处理模态框取消
 const handleModalCancel = () => {
+  formRef.value?.resetFields();
   modalVisible.value = false;
 };
 
 // 删除分类
-const deleteCategory = async (key) => {
+const deleteCategory = (key) => {
   loading.value = true;
-  // 模拟API请求
-  await new Promise(resolve => setTimeout(resolve, 800));
-  Message.success('删除分类成功');
   
-  // 重新加载分类树
-  fetchCategoryTree();
-  // 清空选中状态和详情
-  selectedKeys.value = [];
-  currentCategory.value = {};
-  loading.value = false;
+  // 模拟API请求
+  setTimeout(() => {
+    // 移除节点
+    const removeNode = (nodes, key) => {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].key === key) {
+          nodes.splice(i, 1);
+          return true;
+        }
+        if (nodes[i].children && nodes[i].children.length > 0) {
+          if (removeNode(nodes[i].children, key)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    removeNode(treeData.value, key);
+    
+    // 如果删除的是当前选中的分类，清空选中状态
+    if (currentCategory.value.key === key) {
+      currentCategory.value = {};
+      selectedKeys.value = [];
+    }
+    
+    Message.success('分类删除成功');
+    loading.value = false;
+  }, 500);
 };
 
-// 查看商品详情
-const viewProduct = (product) => {
-  Message.info(`查看商品：${product.name}`);
-  // 这里可以跳转到商品详情页或显示商品详情弹窗
+// 处理拖拽结束
+const handleDragEnd = ({ dropNode, dragNode, dropPosition }) => {
+  Message.success(`已移动 ${dragNode.title} 到 ${dropPosition === -1 ? '之前' : dropPosition === 1 ? '之后' : '成为子节点'} ${dropNode.title}`);
+};
+
+// 获取分类详情
+const getCategoryDetail = () => {
+  if (!currentCategory.value || Object.keys(currentCategory.value).length === 0) {
+    return [];
+  }
+  
+  return [
+    {
+      label: '分类名称',
+      value: currentCategory.value.title
+    },
+    {
+      label: '分类编码',
+      value: currentCategory.value.code
+    },
+    {
+      label: '排序',
+      value: currentCategory.value.sort || 0
+    },
+    {
+      label: '状态',
+      value: currentCategory.value.status !== 0 ? '启用' : '禁用',
+      render: ({ value }) => {
+        return h('a-tag', { color: value === '启用' ? 'green' : 'red' }, value);
+      }
+    },
+    {
+      label: '描述',
+      value: currentCategory.value.description || '暂无描述'
+    }
+  ];
+};
+
+// 检查层级限制
+const checkLevelLimit = (parentKey) => {
+  // 查找父节点的层级
+  const findNodeLevel = (nodes, key, currentLevel = 1) => {
+    for (const node of nodes) {
+      if (node.key === key) {
+        return currentLevel;
+      }
+      if (node.children && node.children.length > 0) {
+        const level = findNodeLevel(node.children, key, currentLevel + 1);
+        if (level > 0) return level;
+      }
+    }
+    return 0;
+  };
+  
+  const parentLevel = findNodeLevel(treeData.value, parentKey);
+  
+  if (parentLevel >= 3) {
+    Modal.warning({
+      title: '层级限制',
+      content: '分类最多支持3级层级结构，不能继续添加子分类。'
+    });
+    return false;
+  }
+  
+  return true;
+};
+
+// 自动生成分类编码
+const generateCode = () => {
+  if (!form.name) return;
+  
+  // 根据分类名称生成拼音首字母加随机数
+  const pinyin = form.name
+    .replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '')  // 只保留中文、字母和数字
+    .substring(0, 10)  // 截取前10个字符
+    .toLowerCase();  // 转小写
+  
+  // 为简化，这里直接使用名称的英文字符或者拼音
+  let baseCode = pinyin;
+  
+  // 如果是子分类，添加父分类的编码作为前缀
+  if (form.parentId && form.parentId !== 'root') {
+    const findParentCode = (nodes, key) => {
+      for (const node of nodes) {
+        if (node.key === key) {
+          return node.code;
+        }
+        if (node.children && node.children.length > 0) {
+          const code = findParentCode(node.children, key);
+          if (code) return code;
+        }
+      }
+      return '';
+    };
+    
+    const parentCode = findParentCode(treeData.value, form.parentId);
+    if (parentCode) {
+      baseCode = `${parentCode}-${baseCode}`;
+    }
+  }
+  
+  // 添加随机后缀确保唯一性
+  const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  form.code = `${baseCode}-${randomSuffix}`;
 };
 </script>
 
@@ -693,156 +657,77 @@ const viewProduct = (product) => {
   padding: 20px;
 }
 
-.general-card {
+.cards-row {
+  display: flex;
+  gap: 20px;
   margin-bottom: 20px;
-  height: calc(100vh - 160px);
-  overflow: auto;
+}
+
+.general-card {
+  flex: 1;
+  height: calc(100vh - 100px);
+  
+  &:first-child {
+    flex: 0 0 400px;
+  }
   
   :deep(.arco-card-header) {
-    border-bottom: 1px solid var(--color-border);
-    padding: 14px 20px;
+    height: 54px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--color-border-2);
   }
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  font-size: 16px;
-}
-
-.detail-subtitle {
-  margin-left: 12px;
-  font-size: 14px;
-  color: var(--color-text-3);
-  font-weight: 400;
-}
-
-.search-bar {
-  margin-bottom: 16px;
   
-  :deep(.arco-input-search) {
-    width: 100%;
+  :deep(.arco-card-body) {
+    padding: 20px;
+    height: calc(100% - 54px);
+    overflow: hidden;
   }
+}
+
+.search-wrapper {
+  margin-bottom: 16px;
+  width: 100%;
 }
 
 .tree-container {
-  border: 1px solid var(--color-border);
+  height: calc(100% - 60px);
+  overflow-y: auto;
+  border: 1px solid var(--color-border-2);
   border-radius: 4px;
-  padding: 12px;
-  background-color: var(--color-fill-1);
-  height: calc(100vh - 280px);
-  overflow: auto;
-  
-  :deep(.arco-tree) {
-    background-color: transparent;
-  }
+  padding: 8px;
 }
 
-.tree-node {
+.detail-content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.custom-tree-node {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 6px 0;
   
   .node-title {
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 14px;
-    display: flex;
-    align-items: center;
   }
   
-  .node-operations {
-    visibility: hidden;
-    display: flex;
+  .node-actions {
+    display: none;
     gap: 4px;
   }
   
-  &:hover {
-    .node-operations {
-      visibility: visible;
-    }
-  }
-}
-
-.empty-detail {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 400px;
-}
-
-.detail-product-list {
-  margin-top: 20px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 16px;
-  
-  .list-header {
+  &:hover .node-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-    }
   }
 }
 
-.category-description {
-  :deep(.arco-descriptions-item) {
-    padding: 12px 16px;
-  }
-  
-  :deep(.arco-descriptions-item-label) {
-    color: var(--color-text-3);
-    font-weight: 500;
-  }
-  
-  :deep(.arco-descriptions-item-value) {
-    color: var(--color-text-1);
-  }
-}
-
-:deep(.arco-modal-body) {
-  padding: 16px 20px;
-}
-
-:deep(.arco-form-item-wrapper) {
-  margin-bottom: 20px;
-}
-
-:deep(.arco-tree-node-title) {
-  width: 100%;
-}
-
-:deep(.arco-tree-node-indent-block) {
-  width: 16px;
-}
-
-:deep(.arco-tree) {
-  padding: 8px 0;
-}
-
-:deep(.arco-radio-group-button) {
-  display: flex;
-  width: 100%;
-  
-  .arco-radio {
-    flex: 1;
-    text-align: center;
-  }
-}
-
-// 增强树节点
 :deep(.arco-tree-node) {
-  margin: 4px 0;
-  border-radius: 4px;
+  padding: 8px 4px;
   
   &:hover {
     background-color: var(--color-fill-2);
@@ -852,20 +737,42 @@ const viewProduct = (product) => {
     background-color: var(--color-primary-light-1);
     
     .arco-tree-node-title {
-      color: var(--color-primary);
-      font-weight: 500;
+      background-color: transparent;
     }
   }
 }
 
-:deep(.arco-tree-node-drag-icon) {
-  margin-right: 4px;
+.empty-detail {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-:deep(.arco-tree-node-expand-icon) {
-  &:hover {
-    background-color: var(--color-fill-3);
-    border-radius: 4px;
+.category-description {
+  :deep(.arco-descriptions-item-label) {
+    width: 120px;
+    background-color: var(--color-fill-2);
+    font-weight: 500;
   }
+  
+  :deep(.arco-descriptions-item-value) {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+.code-tip {
+  font-size: 12px;
+  color: var(--color-text-3);
+  margin-top: 4px;
+}
+
+:deep(.arco-modal-footer .arco-btn),
+:deep(.modal-footer .arco-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 </style> 

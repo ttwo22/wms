@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <a-card class="general-card">
-      <template #title>公告发布管理</template>
+      <template #title>公告管理</template>
       <template #extra>
         <a-button type="primary" @click="openAnnouncementModal('add')">
           <template #icon><icon-plus /></template>
@@ -10,27 +10,27 @@
       </template>
       
       <!-- 搜索区域 -->
-      <div class="search-panel">
-        <a-row :gutter="16" class="search-form">
-          <a-col :span="6">
+      <div class="search-area">
+        <a-form :model="searchForm" layout="inline" @submit="search">
+          <a-form-item field="keywords" label="公告标题/内容">
             <a-input v-model="searchForm.keywords" placeholder="公告标题/内容" allow-clear />
-          </a-col>
-          <a-col :span="6">
-            <a-select v-model="searchForm.status" placeholder="公告状态" allow-clear>
+          </a-form-item>
+          <a-form-item field="status" label="公告状态">
+            <a-select v-model="searchForm.status" placeholder="公告状态" allow-clear style="width: 120px;">
               <a-option :value="1">已发布</a-option>
               <a-option :value="0">已下线</a-option>
             </a-select>
-          </a-col>
-          <a-col :span="6">
-            <a-select v-model="searchForm.type" placeholder="公告类型" allow-clear>
+          </a-form-item>
+          <a-form-item field="type" label="公告类型">
+            <a-select v-model="searchForm.type" placeholder="公告类型" allow-clear style="width: 120px;">
               <a-option v-for="type in announcementTypes" :key="type.value" :value="type.value">
                 {{ type.label }}
               </a-option>
             </a-select>
-          </a-col>
-          <a-col :span="6">
+          </a-form-item>
+          <a-form-item>
             <a-space>
-              <a-button type="primary" @click="search">
+              <a-button type="primary" html-type="submit">
                 <template #icon><icon-search /></template>
                 搜索
               </a-button>
@@ -39,8 +39,8 @@
                 重置
               </a-button>
             </a-space>
-          </a-col>
-        </a-row>
+          </a-form-item>
+        </a-form>
       </div>
       
       <!-- 公告列表 -->
@@ -49,7 +49,7 @@
         :loading="loading"
         :pagination="pagination"
         @page-change="onPageChange"
-        :bordered="false"
+        :bordered="true"
         stripe
         row-key="id"
         :scroll="{ x: '100%' }"
@@ -68,6 +68,18 @@
               <a-tag :color="record.status === 1 ? 'green' : 'red'">
                 {{ record.status === 1 ? '已发布' : '已下线' }}
               </a-tag>
+            </template>
+          </a-table-column>
+          <a-table-column title="阅读量" data-index="readCount" :width="80">
+            <template #cell="{ record }">
+              <a-tooltip position="top">
+                <template #content>
+                  <div>总阅读: {{ record.readCount || 0 }}</div>
+                  <div>昨日阅读: {{ record.readCountYesterday || 0 }}</div>
+                  <div>今日阅读: {{ record.readCountToday || 0 }}</div>
+                </template>
+                <a-link @click="viewReadStats(record)">{{ record.readCount || 0 }}</a-link>
+              </a-tooltip>
             </template>
           </a-table-column>
           <a-table-column title="置顶" :width="80">
@@ -123,107 +135,171 @@
           </a-table-column>
         </template>
       </a-table>
-    </a-card>
-    
-    <!-- 新增/编辑公告弹窗 -->
-    <a-modal
-      v-model:visible="modalVisible"
-      :title="modalType === 'add' ? '发布公告' : '编辑公告'"
-      @ok="handleModalSubmit"
-      @cancel="modalVisible = false"
-      :ok-loading="modalLoading"
-      :mask-closable="false"
-      :width="800"
-    >
-      <a-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        layout="vertical"
-        auto-label-width
+      
+      <!-- 新增/编辑公告弹窗 -->
+      <a-modal
+        v-model:visible="modalVisible"
+        :title="modalType === 'add' ? '发布公告' : '编辑公告'"
+        @ok="handleModalSubmit"
+        @cancel="modalVisible = false"
+        :ok-loading="modalLoading"
+        :mask-closable="false"
+        :width="800"
       >
-        <a-form-item field="title" label="公告标题" required>
-          <a-input v-model="form.title" placeholder="请输入公告标题" allow-clear />
-        </a-form-item>
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item field="type" label="公告类型" required>
-              <a-select v-model="form.type" placeholder="请选择公告类型">
-                <a-option v-for="type in announcementTypes" :key="type.value" :value="type.value">
-                  {{ type.label }}
-                </a-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item field="status" label="公告状态" required>
-              <a-radio-group v-model="form.status" type="button">
-                <a-radio :value="1">立即发布</a-radio>
-                <a-radio :value="0">保存草稿</a-radio>
-              </a-radio-group>
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item field="isTop" label="是否置顶">
-              <a-switch v-model="form.isTop">
-                <template #checked>是</template>
-                <template #unchecked>否</template>
-              </a-switch>
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item field="expireTime" label="过期时间">
-              <a-date-picker
-                v-model="form.expireTime"
-                placeholder="请选择过期时间"
-                show-time
-                format="YYYY-MM-DD HH:mm:ss"
-                style="width: 100%;"
-              />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-form-item field="content" label="公告内容" required>
-          <a-textarea
-            v-model="form.content"
-            placeholder="请输入公告内容，支持HTML格式"
-            :auto-size="{ minRows: 10, maxRows: 15 }"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal>
-    
-    <!-- 查看公告详情 -->
-    <a-modal
-      v-model:visible="detailVisible"
-      title="公告详情"
-      @cancel="detailVisible = false"
-      :footer="false"
-      :width="700"
-    >
-      <div class="announcement-detail" v-if="currentAnnouncement">
-        <h2 class="detail-title">{{ currentAnnouncement.title }}</h2>
-        <div class="detail-meta">
-          <a-space>
-            <a-tag :color="getTagColor(currentAnnouncement.type)">
-              {{ getTypeName(currentAnnouncement.type) }}
-            </a-tag>
-            <span>发布人: {{ currentAnnouncement.publisher }}</span>
-            <span>发布时间: {{ currentAnnouncement.publishTime }}</span>
-          </a-space>
+        <a-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          layout="vertical"
+          auto-label-width
+        >
+          <a-form-item field="title" label="公告标题" required>
+            <a-input v-model="form.title" placeholder="请输入公告标题" allow-clear @focus="handleFocus" />
+          </a-form-item>
+          <a-row :gutter="16">
+            <a-col :span="12">
+              <a-form-item field="type" label="公告类型" required>
+                <a-select v-model="form.type" placeholder="请选择公告类型">
+                  <a-option v-for="type in announcementTypes" :key="type.value" :value="type.value">
+                    {{ type.label }}
+                  </a-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item field="status" label="公告状态" required>
+                <a-radio-group v-model="form.status" type="button">
+                  <a-radio :value="1">立即发布</a-radio>
+                  <a-radio :value="0">保存草稿</a-radio>
+                </a-radio-group>
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-row :gutter="16">
+            <a-col :span="12">
+              <a-form-item field="isTop" label="是否置顶">
+                <a-switch v-model="form.isTop">
+                  <template #checked>是</template>
+                  <template #unchecked>否</template>
+                </a-switch>
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item field="expireTime" label="过期时间">
+                <a-date-picker
+                  v-model="form.expireTime"
+                  placeholder="请选择过期时间"
+                  show-time
+                  format="YYYY-MM-DD HH:mm:ss"
+                  style="width: 100%;"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <a-form-item field="content" label="公告内容" required>
+            <a-textarea
+              v-model="form.content"
+              placeholder="请输入公告内容，支持HTML格式"
+              :auto-size="{ minRows: 10, maxRows: 15 }"
+              @focus="handleFocus"
+            />
+          </a-form-item>
+        </a-form>
+      </a-modal>
+      
+      <!-- 查看公告详情弹窗 -->
+      <a-modal
+        v-model:visible="detailVisible"
+        title="公告详情"
+        @cancel="detailVisible = false"
+        :footer="false"
+        :width="800"
+      >
+        <div class="announcement-detail" v-if="currentAnnouncement">
+          <h2 class="detail-title">{{ currentAnnouncement.title }}</h2>
+          <div class="detail-meta">
+            <a-space>
+              <a-tag :color="getTagColor(currentAnnouncement.type)">
+                {{ getTypeName(currentAnnouncement.type) }}
+              </a-tag>
+              <span>发布人: {{ currentAnnouncement.publisher }}</span>
+              <span>发布时间: {{ currentAnnouncement.publishTime }}</span>
+              <span>阅读量: {{ currentAnnouncement.readCount || 0 }}</span>
+            </a-space>
+          </div>
+          <div class="detail-content" v-html="currentAnnouncement.content"></div>
         </div>
-        <div class="detail-content" v-html="currentAnnouncement.content"></div>
-      </div>
-    </a-modal>
+      </a-modal>
+      
+      <!-- 统计弹窗 -->
+      <a-modal
+        v-model:visible="statsVisible"
+        title="阅读统计"
+        @cancel="statsVisible = false"
+        :footer="false"
+        width="700px"
+      >
+        <div class="read-stats-container" v-if="currentReadStats">
+          <h3>{{ currentReadStats.title }}</h3>
+          <div class="stats-overview">
+            <a-row :gutter="16">
+              <a-col :span="8">
+                <a-statistic title="总阅读量" :value="currentReadStats.readCount || 0" />
+              </a-col>
+              <a-col :span="8">
+                <a-statistic title="独立访问用户" :value="currentReadStats.uniqueReaders || 0" />
+              </a-col>
+              <a-col :span="8">
+                <a-statistic title="平均停留时间" :value="currentReadStats.avgReadTime || 0" :precision="1">
+                  <template #suffix>秒</template>
+                </a-statistic>
+              </a-col>
+            </a-row>
+          </div>
+          
+          <div class="stats-charts">
+            <h4>7日阅读趋势</h4>
+            <div ref="readTrendChart" style="height: 300px;"></div>
+          </div>
+          
+          <div class="stats-reader-table">
+            <h4>阅读用户列表</h4>
+            <a-table
+              :data="readerList"
+              :pagination="{ pageSize: 5 }"
+              :bordered="false"
+              stripe
+            >
+              <template #columns>
+                <a-table-column title="用户名" data-index="username" />
+                <a-table-column title="部门" data-index="department" />
+                <a-table-column title="阅读时间" data-index="readTime" />
+                <a-table-column title="阅读时长" data-index="duration">
+                  <template #cell="{ record }">
+                    {{ record.duration }}秒
+                  </template>
+                </a-table-column>
+                <a-table-column title="是否完整阅读" data-index="isFullRead">
+                  <template #cell="{ record }">
+                    <a-tag :color="record.isFullRead ? 'green' : 'orange'">
+                      {{ record.isFullRead ? '是' : '否' }}
+                    </a-tag>
+                  </template>
+                </a-table-column>
+              </template>
+            </a-table>
+          </div>
+        </div>
+      </a-modal>
+    </a-card>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { Message } from '@arco-design/web-vue';
 import { IconPlus, IconSearch, IconRefresh } from '@arco-design/web-vue/es/icon';
+import * as echarts from 'echarts';
 
 // 数据加载和分页
 const loading = ref(false);
@@ -299,6 +375,12 @@ const rules = {
 const detailVisible = ref(false);
 const currentAnnouncement = ref(null);
 
+// 阅读统计数据
+const statsVisible = ref(false);
+const currentReadStats = ref(null);
+const readerList = ref([]);
+let readTrendChart = null;
+
 // 生命周期钩子
 onMounted(() => {
   fetchAnnouncementList();
@@ -309,94 +391,59 @@ const fetchAnnouncementList = () => {
   loading.value = true;
   // 模拟API请求
   setTimeout(() => {
-    // 模拟数据
-    const mockData = [
+    // 更新模拟数据，添加阅读统计信息
+    announcementList.value = [
       {
-        id: '1',
-        title: '系统升级通知',
-        content: '<p>尊敬的用户：</p><p>我们将于2024年5月20日晚上23:00-次日凌晨2:00进行系统升级维护，届时系统将暂停服务。给您带来的不便敬请谅解。</p><p>系统管理员</p>',
-        type: 'maintenance',
+        id: 1,
+        title: '系统维护通知',
+        content: '<p>尊敬的用户：</p><p>系统将于2024年3月20日晚间22:00-次日凌晨2:00进行系统维护，届时系统将暂停服务。给您带来的不便，敬请谅解。</p>',
+        type: 'system',
         status: 1,
         isTop: true,
         publisher: '系统管理员',
-        publishTime: '2024-05-18 10:00:00',
-        expireTime: '2024-05-21 00:00:00'
+        publishTime: '2024-03-15 10:00:00',
+        expireTime: '2024-03-21 00:00:00',
+        readCount: 156,
+        readCountToday: 23,
+        readCountYesterday: 45,
+        uniqueReaders: 89,
+        avgReadTime: 45.6
       },
       {
-        id: '2',
-        title: '仓库管理系统V2.5版本更新说明',
-        content: '<p>尊敬的用户：</p><p>仓库管理系统已更新至V2.5版本，本次更新包含以下内容：</p><ol><li>新增批量导入导出功能</li><li>优化库存预警提醒</li><li>修复已知BUG若干</li></ol><p>感谢您的使用！</p>',
+        id: 2,
+        title: '新功能上线公告',
+        content: '<p>尊敬的用户：</p><p>我们很高兴地通知您，系统已于今日上线以下新功能：</p><ol><li>批量导入导出</li><li>数据可视化报表</li><li>移动端适配</li></ol><p>欢迎体验并提供宝贵意见！</p>',
         type: 'version',
         status: 1,
         isTop: false,
-        publisher: '技术部门',
-        publishTime: '2024-05-15 09:30:00',
-        expireTime: null
+        publisher: '产品经理',
+        publishTime: '2024-03-10 14:30:00',
+        expireTime: null,
+        readCount: 245,
+        readCountToday: 12,
+        readCountYesterday: 18,
+        uniqueReaders: 132,
+        avgReadTime: 63.2
       },
       {
-        id: '3',
-        title: '五一假期仓库作业安排',
-        content: '<p>各部门：</p><p>根据国家法定假期安排，五一期间（5月1日-5月5日）仓库将实行轮班制度，具体安排如下：</p><p>1. 收发货时间调整为：上午9:00-12:00</p><p>2. 紧急订单请提前48小时预约</p><p>3. 系统正常运行，可在线提交申请</p><p>祝大家节日愉快！</p>',
-        type: 'system',
-        status: 1,
-        isTop: true,
-        publisher: '仓储部',
-        publishTime: '2024-04-28 14:00:00',
-        expireTime: '2024-05-06 00:00:00'
-      },
-      {
-        id: '4',
-        title: '新功能上线：移动端APP发布',
-        content: '<p>尊敬的用户：</p><p>为提升用户体验，我们推出了移动端APP，现已上线，欢迎下载使用。</p><p>主要功能：</p><ul><li>随时随地查看库存</li><li>扫码出入库操作</li><li>移动端审批流程</li></ul><p>扫描二维码下载体验吧！</p>',
+        id: 3,
+        title: '春节放假安排',
+        content: '<p>尊敬的用户：</p><p>根据国家法定节假日安排，结合公司实际情况，现将2024年春节放假安排通知如下：</p><p>放假时间：2024年2月10日至2024年2月17日，共8天。</p><p>2月18日（星期日）正常上班。</p>',
         type: 'activity',
-        status: 1,
-        isTop: false,
-        publisher: '产品部',
-        publishTime: '2024-04-20 11:30:00',
-        expireTime: null
-      },
-      {
-        id: '5',
-        title: '关于调整库存盘点周期的通知',
-        content: '<p>各位同事：</p><p>自2024年6月起，库存盘点周期由月度调整为季度，具体时间安排如下：</p><p>Q2盘点：6月28-30日</p><p>Q3盘点：9月27-29日</p><p>Q4盘点：12月27-29日</p><p>请各部门做好相关准备工作。</p>',
-        type: 'system',
         status: 0,
         isTop: false,
-        publisher: '财务部',
-        publishTime: '2024-05-10 16:45:00',
-        expireTime: null
+        publisher: '人事部',
+        publishTime: '2024-01-25 09:15:00',
+        expireTime: '2024-02-18 00:00:00',
+        readCount: 315,
+        readCountToday: 0,
+        readCountYesterday: 0,
+        uniqueReaders: 198,
+        avgReadTime: 52.8
       }
     ];
     
-    // 根据搜索条件过滤
-    let result = [...mockData];
-    if (searchForm.keywords) {
-      const keywords = searchForm.keywords.toLowerCase();
-      result = result.filter(item => 
-        item.title.toLowerCase().includes(keywords) || 
-        item.content.toLowerCase().includes(keywords)
-      );
-    }
-    
-    if (searchForm.status !== undefined) {
-      result = result.filter(item => item.status === searchForm.status);
-    }
-    
-    if (searchForm.type) {
-      result = result.filter(item => item.type === searchForm.type);
-    }
-    
-    // 置顶公告排在前面
-    result.sort((a, b) => {
-      if (a.isTop !== b.isTop) {
-        return a.isTop ? -1 : 1;
-      }
-      // 同为置顶或非置顶，按发布时间倒序
-      return new Date(b.publishTime) - new Date(a.publishTime);
-    });
-    
-    announcementList.value = result;
-    pagination.total = result.length;
+    pagination.total = announcementList.value.length;
     loading.value = false;
   }, 600);
 };
@@ -565,53 +612,167 @@ const deleteAnnouncement = (record) => {
     loading.value = false;
   }, 500);
 };
+
+// 查看阅读统计
+const viewReadStats = (record) => {
+  statsVisible.value = true;
+  currentReadStats.value = record;
+  
+  // 模拟获取阅读用户数据
+  readerList.value = [
+    { username: '张三', department: '市场部', readTime: '2024-03-15 10:30:45', duration: 120, isFullRead: true },
+    { username: '李四', department: '销售部', readTime: '2024-03-15 11:25:12', duration: 45, isFullRead: false },
+    { username: '王五', department: '财务部', readTime: '2024-03-15 14:05:33', duration: 180, isFullRead: true },
+    { username: '赵六', department: '人事部', readTime: '2024-03-15 16:12:08', duration: 60, isFullRead: true },
+    { username: '钱七', department: '技术部', readTime: '2024-03-16 09:18:22', duration: 90, isFullRead: false },
+    { username: '孙八', department: '运营部', readTime: '2024-03-16 10:45:19', duration: 150, isFullRead: true },
+    { username: '周九', department: '客服部', readTime: '2024-03-16 13:20:40', duration: 30, isFullRead: false }
+  ];
+  
+  // 在下一个事件循环渲染图表，确保DOM已经更新
+  setTimeout(() => {
+    initReadTrendChart();
+  });
+};
+
+// 初始化阅读趋势图表
+const initReadTrendChart = () => {
+  const chartDom = document.getElementById('readTrendChart');
+  if (!chartDom) return;
+  
+  readTrendChart = echarts.init(chartDom);
+  
+  // 模拟数据
+  const days = [];
+  const readData = [];
+  const uniqueData = [];
+  
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    days.push(date.getMonth() + 1 + '/' + date.getDate());
+    
+    // 生成随机数据
+    readData.push(Math.floor(Math.random() * 50) + 10);
+    uniqueData.push(Math.floor(Math.random() * 30) + 5);
+  }
+  
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    legend: {
+      data: ['总阅读量', '独立用户']
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: days
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: '总阅读量',
+        type: 'line',
+        data: readData,
+        smooth: true,
+        itemStyle: {
+          color: '#165DFF'
+        }
+      },
+      {
+        name: '独立用户',
+        type: 'bar',
+        data: uniqueData,
+        itemStyle: {
+          color: '#37C2FF'
+        }
+      }
+    ]
+  };
+  
+  readTrendChart.setOption(option);
+  
+  // 监听窗口变化，调整图表大小
+  window.addEventListener('resize', () => {
+    readTrendChart?.resize();
+  });
+};
+
+// 在组件销毁时清理图表
+const unmounted = () => {
+  if (readTrendChart) {
+    readTrendChart.dispose();
+    readTrendChart = null;
+  }
+  window.removeEventListener('resize', () => {
+    readTrendChart?.resize();
+  });
+};
+
+// 处理文本域聚焦
+const handleFocus = (e) => {
+  // 确保只有当元素被用户点击或Tab键到达时才真正聚焦
+  if (!e.isTrusted) {
+    e.target.blur();
+    return;
+  }
+  // 防止冒泡到父元素
+  e.stopPropagation();
+};
 </script>
 
 <style lang="less" scoped>
+@import '@/styles/variables.less';
+
 .container {
   padding: 20px;
 }
 
 .general-card {
-  margin-bottom: 20px;
-
   :deep(.arco-card-header) {
-    border-bottom: 1px solid var(--color-border);
+    height: 54px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--color-border-2);
+  }
+  
+  :deep(.arco-card-body) {
+    padding: 20px;
   }
 }
 
-.search-panel {
-  background-color: var(--color-fill-2);
-  padding: 16px;
-  border-radius: 4px;
+.search-area {
   margin-bottom: 20px;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.search-form {
-  :deep(.arco-col) {
-    margin-bottom: 0;
-  }
-  
-  :deep(.arco-select) {
-    width: 100%;
-  }
-  
-  :deep(.arco-input-wrapper) {
-    width: 100%;
-  }
+  padding-bottom: 16px;
 }
 
 .content-preview {
   max-height: 60px;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  color: var(--color-text-3);
-  line-height: 1.5;
+  
+  :deep(img) {
+    display: none;
+  }
+  
+  :deep(p) {
+    margin: 0;
+  }
+}
+
+.chart-container {
+  height: 300px;
 }
 
 .announcement-detail {
@@ -646,8 +807,20 @@ const deleteAnnouncement = (record) => {
   }
 }
 
-:deep(.arco-modal-body) {
-  padding: 20px;
+:deep(.arco-modal) {
+  .arco-modal-header {
+    border-bottom: 1px solid var(--color-border);
+    padding: 16px 20px;
+  }
+  
+  .arco-modal-body {
+    padding: 20px;
+  }
+  
+  .arco-modal-footer {
+    border-top: 1px solid var(--color-border);
+    padding: 12px 20px;
+  }
 }
 
 :deep(.arco-form-item-wrapper) {
@@ -689,6 +862,52 @@ const deleteAnnouncement = (record) => {
       justify-content: flex-start;
     }
   }
+}
+
+:deep(.general-card .arco-btn) {
+  display: flex;
+  align-items: center;
+  
+  .arco-icon {
+    margin-right: 6px;
+  }
+}
+
+:deep(.arco-modal-footer .arco-btn),
+:deep(.modal-footer .arco-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.read-stats-container {
+  .stats-overview {
+    margin-bottom: 24px;
+    margin-top: 16px;
+  }
+  
+  .stats-charts {
+    margin-bottom: 24px;
+    
+    h4 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+  
+  .stats-reader-table {
+    h4 {
+      margin-bottom: 16px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+}
+
+#readTrendChart {
+  width: 100%;
+  height: 300px;
 }
 
 :deep(.arco-btn-size-small) {

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <a-card class="general-card">
-      <template #title>客户档案</template>
+      <template #title>客户资料管理</template>
       <template #extra>
         <a-button type="primary" @click="openCreateModal">
           <template #icon><icon-plus /></template>
@@ -503,8 +503,10 @@ const deleteItem = async (record) => {
 </script>
 
 <style lang="less" scoped>
-.container {
-  padding: 20px;
+@import '@/styles/variables.less';
+
+.search-form {
+  margin-bottom: 16px;
 }
 
 .general-card {
@@ -515,10 +517,10 @@ const deleteItem = async (record) => {
   }
 }
 
-.search-form {
-  margin-bottom: 16px;
-  padding: 20px;
-  background-color: var(--color-fill-2);
-  border-radius: 4px;
+:deep(.arco-modal-footer .arco-btn),
+:deep(.modal-footer .arco-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 </style> 

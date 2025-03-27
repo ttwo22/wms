@@ -1,0 +1,345 @@
+@import './variables.less';
+
+// 全局样式重置
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-size: @font-size-base;
+  color: @text-primary;
+  background-color: #f5f6f7;
+}
+
+// 全局布局样式
+.page-container {
+  height: 100%;
+  padding: @spacing-lg;
+  background-color: var(--color-fill-2);
+}
+
+// 统一的内容区容器样式
+.container {
+  padding: @spacing-xl;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+// 全局文本样式
+.text-primary {
+  color: @text-primary;
+}
+
+.text-regular {
+  color: @text-regular;
+}
+
+.text-secondary {
+  color: @text-secondary;
+}
+
+// 全局间距类
+.mb-base {
+  margin-bottom: @spacing-base;
+}
+
+.mb-lg {
+  margin-bottom: @spacing-lg;
+}
+
+.mb-xl {
+  margin-bottom: @spacing-xl;
+}
+
+.mt-base {
+  margin-top: @spacing-base;
+}
+
+.mt-lg {
+  margin-top: @spacing-lg;
+}
+
+.mt-xl {
+  margin-top: @spacing-xl;
+}
+
+// 全局flex布局类
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// 全局按钮样式
+.btn-group {
+  display: flex;
+  gap: @spacing-base;
+  
+  &.right {
+    justify-content: flex-end;
+  }
+}
+
+// 全局表单样式
+.form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: @spacing-xl;
+  background-color: #fff;
+  border-radius: @border-radius-base;
+  box-shadow: @box-shadow-base;
+}
+
+/* 卡片间距 */
+.card-spacing {
+  margin-bottom: @spacing-lg;
+}
+
+/* 卡片通用样式 */
+.general-card {
+  border-radius: @border-radius-base;
+  box-shadow: @box-shadow-base;
+  background-color: var(--color-bg-2);
+  
+  .arco-card-header {
+    height: 52px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+    
+    .arco-card-header-title {
+      font-size: @font-size-lg;
+      font-weight: 500;
+      color: var(--color-text-1);
+    }
+  }
+  
+  .arco-card-body {
+    padding: 20px;
+  }
+}
+
+/* 表格通用样式 */
+.arco-table {
+  .arco-table-th {
+    background-color: #fafafa;
+    font-weight: 500;
+    color: var(--color-text-1);
+  }
+  
+  .arco-table-td {
+    color: var(--color-text-regular);
+  }
+  
+  .arco-table-row:hover {
+    background-color: #f5f7fa;
+  }
+}
+
+/* 按钮图标对齐 */
+.arco-btn {
+  display: flex;
+  align-items: center;
+  
+  .arco-icon {
+    margin-right: 6px;
+  }
+}
+
+/* 模态框通用样式 */
+.arco-modal {
+  .arco-modal-header {
+    border-bottom: 1px solid var(--color-border);
+    padding: 16px 20px;
+  }
+  
+  .arco-modal-body {
+    padding: 20px;
+  }
+  
+  .arco-modal-footer {
+    border-top: 1px solid var(--color-border);
+    padding: 12px 20px;
+  }
+  
+  outline: none !important;
+  
+  .arco-modal-header,
+  .arco-modal-body,
+  .arco-modal-footer {
+    outline: none !important;
+  }
+  
+  .arco-select-view,
+  .arco-input-wrapper,
+  .arco-radio-group,
+  .arco-switch {
+    outline: none !important;
+  }
+}
+
+/* 表单项标签样式 */
+.arco-form-item-label {
+  font-weight: 500;
+}
+
+/* 搜索表单通用样式 */
+.search-form-container {
+  background-color: var(--color-bg-2);
+  border-radius: @border-radius-base;
+  padding: 16px 20px;
+  margin-bottom: @spacing-lg;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* 网格行间距 */
+.arco-row {
+  margin-bottom: @spacing-lg;
+}
+
+/* 数据卡片通用样式 */
+.data-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-radius: @border-radius-base;
+  background-color: var(--color-bg-2);
+  box-shadow: @box-shadow-base;
+  height: 100%;
+}
+
+/* 操作按钮组间距 */
+.arco-space {
+  .arco-btn + .arco-btn {
+    margin-left: 8px;
+  }
+}
+
+/* 内容区块内边距 */
+.content-block {
+  padding: @spacing-lg;
+}
+
+/* 边框卡片 */
+.border-card {
+  border: 1px solid var(--color-border);
+  border-radius: @border-radius-base;
+  padding: @spacing-lg;
+  margin-bottom: @spacing-lg;
+}
+
+/* 页面标题和面包屑容器 */
+.page-header-wrapper {
+  margin-bottom: @spacing-lg;
+}
+
+/* 修复弹窗底部按钮样式 */
+.arco-modal-footer .arco-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 8px !important;
+}
+
+/* 细化按钮内部的图标和文字对齐 */
+.arco-btn {
+  .arco-icon {
+    vertical-align: -0.125em !important;
+  }
+  
+  &.arco-btn-size-small {
+    .arco-icon {
+      font-size: 14px !important;
+    }
+  }
+  
+  &.arco-btn-size-mini {
+    .arco-icon {
+      font-size: 12px !important;
+    }
+  }
+  
+  &.arco-btn-primary,
+  &.arco-btn-secondary,
+  &.arco-btn-dashed,
+  &.arco-btn-outline,
+  &.arco-btn-text {
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+}
+
+/* 取消按钮样式 */
+.arco-modal-footer .arco-btn-secondary,
+.modal-footer .arco-btn-secondary {
+  margin-right: 8px;
+}
+
+/* 防止光标随机聚焦 */
+.arco-modal-body:focus {
+  outline: none;
+}
+.arco-input:not(:focus),
+.arco-textarea:not(:focus) {
+  outline: none;
+}
+
+/* 确保表单元素只在真正需要聚焦时才聚焦 */
+.arco-form-item-control:not(:focus-within) {
+  outline: none !important;
+}
+
+/* 全局防止不必要的随机聚焦 */
+.arco-input, 
+.arco-select-view, 
+.arco-textarea, 
+.arco-date-picker-input,
+.arco-time-picker-input,
+.arco-cascader-view,
+.arco-trigger-content,
+.arco-picker,
+.arco-range-picker,
+.arco-select-dropdown,
+.arco-date-picker {
+  &:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* 解决Arco Design按钮样式问题 */
+button.arco-btn {
+  position: relative;
+  
+  .arco-icon {
+    vertical-align: -0.125em;
+  }
+}
+
+/* 自定义底部按钮区域样式 */
+.modal-footer .arco-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 8px !important;
+} 

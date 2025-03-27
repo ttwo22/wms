@@ -5,7 +5,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/login/index.vue'),
+    component: () => import(/* webpackChunkName: "login" */ '@/views/login/index.vue'),
     meta: {
       title: '登录',
       requiresAuth: false
@@ -13,13 +13,13 @@ const routes = [
   },
   {
     path: '/',
-    component: () => import('@/layout/index.vue'),
+    component: () => import(/* webpackChunkName: "layout" */ '@/layout/index.vue'),
     redirect: '/dashboard/workbench',
     children: [
       {
         path: 'dashboard/workbench',
         name: 'Workbench',
-        component: () => import('@/views/dashboard/workbench.vue'),
+        component: () => import(/* webpackChunkName: "workbench" */ '@/views/dashboard/workbench.vue'),
         meta: {
           title: '工作台',
           requiresAuth: true,
@@ -109,7 +109,7 @@ const routes = [
       {
         path: 'basicSettings/prod_cat_mgmt',
         name: 'ProductCategory',
-        component: () => import('@/views/basic-settings/prod-cat-mgmt.vue'),
+        component: () => import(/* webpackChunkName: "prod-cat-mgmt" */ '../views/basic-settings/prod-cat-mgmt.vue'),
         meta: {
           title: '商品分类',
           requiresAuth: true,
@@ -177,9 +177,19 @@ const routes = [
         }
       },
       {
+        path: 'inbound/inbound_list',
+        name: 'InboundList',
+        component: () => import(/* webpackChunkName: "inbound-list" */ '@/views/inbound/inbound-list.vue'),
+        meta: {
+          title: '入库申请列表',
+          requiresAuth: true,
+          roles: ['admin', 'employee']
+        }
+      },
+      {
         path: 'inbound/inbound_req_inspect',
         name: 'InboundRequestInspect',
-        component: () => import('@/views/inbound/inbound-req-inspect.vue'),
+        component: () => import(/* webpackChunkName: "inbound-inspection" */ '@/views/inbound/inbound-inspection.vue'),
         meta: {
           title: '入库申请验收',
           requiresAuth: true,
@@ -189,9 +199,29 @@ const routes = [
       {
         path: 'inbound/inbound_shelve_doc',
         name: 'InboundShelveDoc',
-        component: () => import('@/views/inbound/inbound-shelve-doc.vue'),
+        component: () => import(/* webpackChunkName: "inbound-shelving" */ '@/views/inbound/inbound-shelving.vue'),
         meta: {
-          title: '入库上架单据',
+          title: '入库上架作业',
+          requiresAuth: true,
+          roles: ['admin', 'employee']
+        }
+      },
+      {
+        path: 'inbound/inbound_record',
+        name: 'InboundRecord',
+        component: () => import(/* webpackChunkName: "inbound-record" */ '@/views/inbound/inbound-record.vue'),
+        meta: {
+          title: '入库记录查询',
+          requiresAuth: true,
+          roles: ['admin', 'employee']
+        }
+      },
+      {
+        path: 'outbound/outbound_list',
+        name: 'OutboundList',
+        component: () => import('@/views/outbound/outbound-list.vue'),
+        meta: {
+          title: '出库申请列表',
           requiresAuth: true,
           roles: ['admin', 'employee']
         }
@@ -199,9 +229,19 @@ const routes = [
       {
         path: 'outbound/outbound_req_approve',
         name: 'OutboundRequestApprove',
-        component: () => import('@/views/outbound/outbound-req-approve.vue'),
+        component: () => import('@/views/outbound/outbound-approval.vue'),
         meta: {
-          title: '出库申请审核',
+          title: '出库审批管理',
+          requiresAuth: true,
+          roles: ['admin', 'employee']
+        }
+      },
+      {
+        path: 'outbound/outbound_picking',
+        name: 'OutboundPicking',
+        component: () => import('@/views/outbound/outbound-picking.vue'),
+        meta: {
+          title: '拣货作业管理',
           requiresAuth: true,
           roles: ['admin', 'employee']
         }
@@ -209,9 +249,9 @@ const routes = [
       {
         path: 'outbound/outbound_op_ship',
         name: 'OutboundOperationShip',
-        component: () => import('@/views/outbound/outbound-op-ship.vue'),
+        component: () => import('@/views/outbound/outbound-shipping.vue'),
         meta: {
-          title: '出库作业发货',
+          title: '出库发货确认',
           requiresAuth: true,
           roles: ['admin', 'employee']
         }
@@ -294,4 +334,4 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-export default router 
+export default router

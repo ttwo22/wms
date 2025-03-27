@@ -1,8 +1,8 @@
 <template>
-  <page-main title="统计报表">
+  <div class="page-main">
     <a-space direction="vertical" size="large" fill class="report-container">
       <!-- 时间筛选与类型选择 -->
-      <a-card :bordered="false">
+      <a-card :bordered="false" class="filter-card">
         <a-row :gutter="16" align="center">
           <a-col :span="12">
             <a-space>
@@ -255,7 +255,7 @@
         />
       </a-card>
     </a-space>
-  </page-main>
+  </div>
 </template>
 
 <script setup>
@@ -476,9 +476,17 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
+<style lang="less" scoped>
+.page-main {
+  padding: 20px;
+}
+
 .report-container {
-  padding: 0 16px 16px;
+  margin-top: 16px;
+}
+
+.filter-card {
+  margin-bottom: 16px;
 }
 
 .data-card {
@@ -664,4 +672,4 @@ onMounted(() => {
 .table-card :deep(.arco-table-th) {
   background-color: var(--color-fill-2);
 }
-</style> 
+</style>
